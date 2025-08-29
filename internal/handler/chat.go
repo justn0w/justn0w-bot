@@ -6,17 +6,33 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var (
-	chatService service.ChatService
-)
+type ChatHandler struct {
+}
 
-type ChatHandler struct{}
+type ChatRequest struct {
+	Question string `json:"question"`
+}
 
-func (t *ChatHandler) DoChat(c *gin.Context) {
+func (t ChatHandler) Generate(c *gin.Context) {
 	question := c.DefaultPostForm("question", "")
-	res, err := chatService.DoChat(question)
+
+	chatService := service.ChatService{}
+	res, err := chatService.Generate(question)
 	if err != nil {
 		panic("失败")
 	}
 	ReturnSuccess(c, 200, "success", res)
+}
+
+func (t ChatHandler) GenerateStream(c *gin.Context) {
+	chatRequest := ChatRequest{}
+	err := c.ShouldBind(&chatRequest)
+	if err != nil {
+		ReturnError(c, 400, "参数错误", "")
+		return
+	}
+
+	chatService := service.ChatService{}
+	question := c.DefaultPostForm("question", "")
+	chatService.GenerateStream(c, question)
 }

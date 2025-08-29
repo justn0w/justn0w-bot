@@ -15,7 +15,8 @@ func Router() *gin.Engine {
 
 	{
 		chatGroup := r.Group("/chat")
-		chatGroup.POST("/doChat", doChatHandler.DoChat)
+		chatGroup.POST("/generate", doChatHandler.Generate)
+		chatGroup.POST("/generate/stream", doChatHandler.GenerateStream)
 	}
 	return r
 }
