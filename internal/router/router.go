@@ -6,17 +6,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var (
-	doChatHandler handler.ChatHandler
-)
-
 func Router() *gin.Engine {
 	r := gin.Default()
 
 	{
 		chatGroup := r.Group("/chat")
-		chatGroup.POST("/generate", doChatHandler.Generate)
-		chatGroup.POST("/generate/stream", doChatHandler.GenerateStream)
+		chatGroup.POST("/generate", handler.ChatHandler{}.Generate)
+		chatGroup.POST("/generate/stream", handler.ChatHandler{}.GenerateStream)
+	}
+
+	{
+		chatGroup := r.Group("/rag")
+		chatGroup.POST("/file/upload", handler.RagHandler{}.UploadFile)
 	}
 	return r
 }

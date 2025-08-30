@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"justn0w-bot/internal/request"
 	"log"
 	"os"
 
@@ -48,7 +49,7 @@ func (t ChatService) Generate(question string) (string, error) {
 	return resp.Content, err
 }
 
-func (t ChatService) GenerateStream(c *gin.Context, question string) {
+func (t ChatService) GenerateStream(c *gin.Context, request request.ChatRequest) {
 	//1 初始化context
 	ctx := context.Background()
 
@@ -56,7 +57,24 @@ func (t ChatService) GenerateStream(c *gin.Context, question string) {
 	cm := buildModel(ctx)
 
 	//3 对话内容
-	messages := buildMessage(question)
+	messages := buildMessage(request.Question)
+
+	//4 拿到结果
+	streamResult, _ := cm.Stream(ctx, messages)
+
+	//5 流式输出
+	handleStreamResponse(streamResult, c)
+}
+
+func (t ChatService) GenerateStreamWithRag(c *gin.Context, request request.ChatRequest) {
+	//1 初始化context
+	ctx := context.Background()
+
+	//2 创建模型
+	cm := buildModel(ctx)
+
+	//3 对话内容
+	messages := buildMessage(request.Question)
 
 	//4 拿到结果
 	streamResult, _ := cm.Stream(ctx, messages)

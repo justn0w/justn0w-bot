@@ -1,0 +1,12 @@
+redis:
+  addr: 127.0.0.1:6379
+  db: 0
+  pool_size: 10
+  dial_timeout: 5    # 秒
+  read_timeout: 5
+  write_timeout: 5
+  idle_timeout: 300  # 秒
+
+ollama:
+  base_url: http://localhost:11434
+  embedding_model: nomic-embed-text
