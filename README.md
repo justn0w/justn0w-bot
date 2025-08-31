@@ -1,1 +1,1 @@
-通过Enio+gin实现的简单智能体
+通过Enio+gin实现的AI agent，可支持自定义上传知识的RAG(该功能还在实现中)
