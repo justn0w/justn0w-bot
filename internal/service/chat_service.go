@@ -56,25 +56,11 @@ func (t ChatService) GenerateStream(c *gin.Context, request request.ChatRequest)
 	//2 创建模型
 	cm := buildModel(ctx)
 
-	//3 对话内容
-	messages := buildMessage(request.Question)
-
-	//4 拿到结果
-	streamResult, _ := cm.Stream(ctx, messages)
-
-	//5 流式输出
-	handleStreamResponse(streamResult, c)
-}
-
-func (t ChatService) GenerateStreamWithRag(c *gin.Context, request request.ChatRequest) {
-	//1 初始化context
-	ctx := context.Background()
-
-	//2 创建模型
-	cm := buildModel(ctx)
+	//3 检索RAG的内容
+	retrievalResult := handleRetrieval(ctx, request)
 
 	//3 对话内容
-	messages := buildMessage(request.Question)
+	messages := buildMessageWithRetrieval(request.Question, retrievalResult)
 
 	//4 拿到结果
 	streamResult, _ := cm.Stream(ctx, messages)
@@ -142,7 +128,7 @@ func buildModel(ctx context.Context) *deepseek.ChatModel {
 	// 创建 deepseek 模型
 	cm, err := deepseek.NewChatModel(ctx, &deepseek.ChatModelConfig{
 		APIKey:    apiKey,
-		Model:     "deepseek-reasoner",
+		Model:     "deepseek-chat",
 		MaxTokens: 2000,
 	})
 	if err != nil {
@@ -151,6 +137,7 @@ func buildModel(ctx context.Context) *deepseek.ChatModel {
 	return cm
 }
 
+// 简单的build
 func buildMessage(question string) []*schema.Message {
 	messages := []*schema.Message{
 		{
@@ -162,5 +149,39 @@ func buildMessage(question string) []*schema.Message {
 			Content: question,
 		},
 	}
+	return messages
+}
+
+// 结合rag的结果
+func buildMessageWithRetrieval(question string, retrievalResult []*schema.Document) []*schema.Message {
+
+	content := ""
+	if len(retrievalResult) > 0 {
+		content = "基于以下背景信息回答问题：\n"
+		for i, doc := range retrievalResult {
+			content += fmt.Sprintf("背景%d:%s\n", i+1, doc.Content)
+		}
+	}
+
+	finalContent := ""
+	if content == "" {
+		finalContent = "问题：" + question
+	} else {
+		finalContent = content + "问题: " + question + "\n请根据上述背景信息回答问题。"
+	}
+
+	messages := []*schema.Message{
+		{
+			Role: schema.System,
+			Content: `You are a helpful AI assistant. Based on the provided context,
+						answer the user's question accurately. If the context doesn't contain relevant information,
+						please indicate that clearly. Be concise in your responses.`,
+		},
+		{
+			Role:    schema.User,
+			Content: finalContent,
+		},
+	}
+
 	return messages
 }

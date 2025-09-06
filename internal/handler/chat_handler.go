@@ -23,7 +23,7 @@ func (t ChatHandler) Generate(c *gin.Context) {
 
 func (t ChatHandler) GenerateStream(c *gin.Context) {
 	chatRequest := request.ChatRequest{}
-	err := c.ShouldBind(&chatRequest)
+	err := c.ShouldBindJSON(&chatRequest)
 	if err != nil {
 		ReturnError(c, 400, "参数错误", "")
 		return

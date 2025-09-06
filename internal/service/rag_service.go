@@ -2,8 +2,9 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"justn0w-bot/config"
-	"justn0w-bot/pkg/consts"
+	"justn0w-bot/internal/request"
 	"justn0w-bot/pkg/utils"
 	"time"
 
@@ -12,13 +13,42 @@ import (
 
 	"github.com/cloudwego/eino-ext/components/document/transformer/splitter/recursive"
 	"github.com/cloudwego/eino-ext/components/embedding/ollama"
-	"github.com/cloudwego/eino/components/embedding"
+	"github.com/cloudwego/eino-ext/components/indexer/milvus"
+	milvus_retriever "github.com/cloudwego/eino-ext/components/retriever/milvus"
 	"github.com/cloudwego/eino/schema"
 	"github.com/google/uuid"
+	"github.com/milvus-io/milvus-sdk-go/v2/entity"
 	"github.com/spf13/viper"
-
-	"github.com/cloudwego/eino-ext/components/indexer/redis"
 )
+
+var fields = []*entity.Field{
+	{
+		Name:     "id",
+		DataType: entity.FieldTypeVarChar,
+		TypeParams: map[string]string{
+			"max_length": "256",
+		},
+		PrimaryKey: true,
+	},
+	{
+		Name:     "vector", // 确保字段名匹配
+		DataType: entity.FieldTypeBinaryVector,
+		TypeParams: map[string]string{
+			"dim": "24576",
+		},
+	},
+	{
+		Name:     "content",
+		DataType: entity.FieldTypeVarChar,
+		TypeParams: map[string]string{
+			"max_length": "8192",
+		},
+	},
+	{
+		Name:     "metadata",
+		DataType: entity.FieldTypeJSON,
+	},
+}
 
 type RagService struct {
 }
@@ -42,32 +72,24 @@ func (s RagService) Vectorize(uploadFile *multipart.FileHeader, ctx context.Cont
 }
 
 func saveVectors(docs []*schema.Document, ctx context.Context) {
-	indexer, err := redis.NewIndexer(ctx, &redis.IndexerConfig{
-		Client:    config.RedisClient,
-		KeyPrefix: consts.RedisKeyPrefix,
-		Embedding: buildEmbedding(ctx),
+	emb := buildEmbedding(ctx)
+	indexer, err := milvus.NewIndexer(ctx, &milvus.IndexerConfig{
+		Client:     config.MilvusClient,
+		Embedding:  emb,
+		Fields:     fields,
+		Collection: viper.GetString("milvus.collection"),
 	})
 	if err != nil {
-		panic(err)
+		log.Fatalf("Failed to create indexer: %v", err)
+		return
 	}
+	ids, err := indexer.Store(ctx, docs)
+	if err != nil {
+		log.Fatalf("Failed to store: %v", err)
+		return
+	}
+	log.Printf("Store success, ids: %v", ids)
 
-	ids, _ := indexer.Store(ctx, docs)
-	log.Printf("result: %v\n", ids)
-
-}
-
-func buildEmbedding(ctx context.Context) embedding.Embedder {
-
-	baseURL := viper.GetString("ollama.base_url")
-	model := viper.GetString("ollama.embedding_model")
-
-	embedder, _ := ollama.NewEmbedder(ctx, &ollama.EmbeddingConfig{
-		BaseURL: baseURL,
-		Model:   model,
-		Timeout: 10 * time.Second,
-	})
-
-	return embedder
 }
 
 func processEmbedding(docs []string, ctx context.Context) [][]float64 {
@@ -96,9 +118,9 @@ func splitText(content string, ctx context.Context) []*schema.Document {
 
 	//1 初始化分割器
 	splitter, err := recursive.NewSplitter(ctx, &recursive.Config{
-		ChunkSize:   1000,
-		OverlapSize: 200,
-		Separators:  []string{"\\n", "\\r\\n", "\\r", " ", "\\n\\n"},
+		ChunkSize:   600,
+		OverlapSize: 50,
+		Separators:  []string{"\n\n", "\n", "\r\n", "\r", ". ", "; ", " ", "\t"},
 		KeepType:    recursive.KeepTypeEnd,
 		IDGenerator: func(ctx context.Context, originalID string, splitIndex int) string {
 			return uuid.New().String()
@@ -159,3 +181,33 @@ func splitText(content string, ctx context.Context) []*schema.Document {
 //	}
 //	return resultContents
 //}
+
+func handleRetrieval(ctx context.Context, chatRequest request.ChatRequest) []*schema.Document {
+	emb := buildEmbedding(ctx)
+
+	retriever, err := milvus_retriever.NewRetriever(ctx, &milvus_retriever.RetrieverConfig{
+		Client:      config.MilvusClient,
+		Collection:  viper.GetString("milvus.collection"),
+		Partition:   nil,
+		VectorField: "vector",
+		OutputFields: []string{
+			"id",
+			"content",
+		},
+		TopK:      1,
+		Embedding: emb,
+	})
+
+	if err != nil {
+		panic(err)
+	}
+
+	docs, err := retriever.Retrieve(ctx, chatRequest.Question)
+	if err != nil {
+		panic(err)
+	}
+	for i, doc := range docs {
+		fmt.Printf("[%d] %s\n", i, doc.Content)
+	}
+	return docs
+}

@@ -133,4 +133,5 @@ chat/generate/stream
 * https://www.zhihu.com/question/616556462/answer/3225110555
 
 【golang读取.env文件的方式】https://juejin.cn/post/7086668547547463694
+[enio的基础教程] https://www.bilibili.com/video/BV17SudzfEGX
 

@@ -27,5 +27,9 @@ func LoadYmlConfig() {
 func Init() {
 	LoadYmlConfig()
 	LoadEnv()
-	InitRedis()
+	//err := InitRedis()
+	//if err != nil {
+	//	log.Fatalf("failed to init redis index: %v", err)
+	//}
+	InitMilvus()
 }
