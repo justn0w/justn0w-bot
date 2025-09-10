@@ -31,5 +31,6 @@ func Init() {
 	//if err != nil {
 	//	log.Fatalf("failed to init redis index: %v", err)
 	//}
+	InitMySQL()
 	InitMilvus()
 }

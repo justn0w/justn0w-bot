@@ -116,7 +116,9 @@ chat/generate/stream
 
 ###### 4.4.1 注册
 
-###### 4.4.2 登录
+###### 4.4.2 登录与鉴权（使用jwt实现）
+
+###### 4.4.3 退出功能
 
 #### 五 测试
 
@@ -134,4 +136,9 @@ chat/generate/stream
 
 【golang读取.env文件的方式】https://juejin.cn/post/7086668547547463694
 [enio的基础教程] https://www.bilibili.com/video/BV17SudzfEGX
+[jwt]的教程
+* https://developer.aliyun.com/article/995894 【用Java实现的，流程清晰】
+* https://www.doubao.com/chat/19765648749498370 
+* https://chat.deepseek.com/a/chat/s/7fd0c75b-c707-4813-bf27-9387958b57a7
+* gin-vue-admin  git@github.com:flipped-aurora/gin-vue-admin.gi
 

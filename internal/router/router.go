@@ -29,5 +29,11 @@ func Router() *gin.Engine {
 		chatGroup := r.Group("/rag")
 		chatGroup.POST("/file/upload", handler.RagHandler{}.UploadFile)
 	}
+
+	{
+		chatGroup := r.Group("/user")
+		chatGroup.POST("/register", handler.UserHandler{}.Register)
+		chatGroup.POST("/login", handler.UserHandler{}.Login)
+	}
 	return r
 }

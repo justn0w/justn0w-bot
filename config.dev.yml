@@ -7,6 +7,10 @@ redis:
   write_timeout: 5
   idle_timeout: 300  # 秒
 
+mysql:
+  url: root:123456@tcp(127.0.0.1:3306)/justnow_bot
+
+
 milvus:
   address: 127.0.0.1:19530
   username: root
