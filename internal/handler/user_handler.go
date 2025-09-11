@@ -18,6 +18,11 @@ func (u UserHandler) Register(c *gin.Context) {
 		log.Fatalln("参数解析错误")
 	}
 
+	if registerRequest.Name == "" || registerRequest.Password == "" {
+		ReturnError(c, 400, "参数错误", "")
+		return
+	}
+
 	userService := service.UserService{}
 	err = userService.Register(registerRequest.Name, registerRequest.Password)
 	if err != nil {
@@ -27,6 +32,22 @@ func (u UserHandler) Register(c *gin.Context) {
 	ReturnSuccess(c, 200, "注册成功", nil)
 }
 
-func (u UserHandler) Login(context *gin.Context) {
+func (u UserHandler) Login(c *gin.Context) {
+	registerRequest := &request.UserRequest{}
+	err := c.ShouldBindJSON(registerRequest)
+	if err != nil {
+		log.Fatalln("参数解析错误")
+	}
+	if registerRequest.Name == "" || registerRequest.Password == "" {
+		ReturnError(c, 400, "参数错误", "")
+		return
+	}
 
+	userService := service.UserService{}
+	err = userService.Login(registerRequest.Name, registerRequest.Password)
+	if err != nil {
+		ReturnError(c, 400, err.Error(), nil)
+		return
+	}
+	ReturnSuccess(c, 200, "登录成功", nil)
 }

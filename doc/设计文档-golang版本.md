@@ -137,8 +137,8 @@ chat/generate/stream
 【golang读取.env文件的方式】https://juejin.cn/post/7086668547547463694
 [enio的基础教程] https://www.bilibili.com/video/BV17SudzfEGX
 [jwt]的教程
-* https://developer.aliyun.com/article/995894 【用Java实现的，流程清晰】
-* https://www.doubao.com/chat/19765648749498370 
-* https://chat.deepseek.com/a/chat/s/7fd0c75b-c707-4813-bf27-9387958b57a7
+* https://golang-jwt.github.io/jwt/usage/create/
+* https://www.cnblogs.com/XY-Heruo/p/18280787
+* https://www.cnblogs.com/beatle-go/p/17923846.html
 * gin-vue-admin  git@github.com:flipped-aurora/gin-vue-admin.gi
 
