@@ -2,6 +2,7 @@ package handler
 
 import (
 	"justn0w-bot/internal/request"
+	"justn0w-bot/internal/response"
 	"justn0w-bot/internal/service"
 	"log"
 
@@ -19,17 +20,17 @@ func (u UserHandler) Register(c *gin.Context) {
 	}
 
 	if registerRequest.Name == "" || registerRequest.Password == "" {
-		ReturnError(c, 400, "参数错误", "")
+		response.ReturnError(c, 400, "参数错误", "")
 		return
 	}
 
 	userService := service.UserService{}
 	err = userService.Register(registerRequest.Name, registerRequest.Password)
 	if err != nil {
-		ReturnError(c, 500, err.Error(), nil)
+		response.ReturnError(c, 500, err.Error(), nil)
 		return
 	}
-	ReturnSuccess(c, 200, "注册成功", nil)
+	response.ReturnSuccess(c, 200, "注册成功", nil)
 }
 
 func (u UserHandler) Login(c *gin.Context) {
@@ -39,15 +40,15 @@ func (u UserHandler) Login(c *gin.Context) {
 		log.Fatalln("参数解析错误")
 	}
 	if registerRequest.Name == "" || registerRequest.Password == "" {
-		ReturnError(c, 400, "参数错误", "")
+		response.ReturnError(c, 400, "参数错误", "")
 		return
 	}
 
 	userService := service.UserService{}
-	err = userService.Login(registerRequest.Name, registerRequest.Password)
+	loginResponse, err := userService.Login(registerRequest.Name, registerRequest.Password)
 	if err != nil {
-		ReturnError(c, 400, err.Error(), nil)
+		response.ReturnError(c, 400, err.Error(), loginResponse)
 		return
 	}
-	ReturnSuccess(c, 200, "登录成功", nil)
+	response.ReturnSuccess(c, 200, "登录成功", loginResponse)
 }

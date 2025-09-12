@@ -140,5 +140,5 @@ chat/generate/stream
 * https://golang-jwt.github.io/jwt/usage/create/
 * https://www.cnblogs.com/XY-Heruo/p/18280787
 * https://www.cnblogs.com/beatle-go/p/17923846.html
-* gin-vue-admin  git@github.com:flipped-aurora/gin-vue-admin.gi
+* gin-vue-admin  git@github.com:flipped-aurora/gin-vue-admin.git
 

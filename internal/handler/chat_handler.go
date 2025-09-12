@@ -2,6 +2,7 @@ package handler
 
 import (
 	"justn0w-bot/internal/request"
+	"justn0w-bot/internal/response"
 	"justn0w-bot/internal/service"
 
 	"github.com/gin-gonic/gin"
@@ -18,14 +19,14 @@ func (t ChatHandler) Generate(c *gin.Context) {
 	if err != nil {
 		panic("失败")
 	}
-	ReturnSuccess(c, 200, "success", res)
+	response.ReturnSuccess(c, 200, "success", res)
 }
 
 func (t ChatHandler) GenerateStream(c *gin.Context) {
 	chatRequest := request.ChatRequest{}
 	err := c.ShouldBindJSON(&chatRequest)
 	if err != nil {
-		ReturnError(c, 400, "参数错误", "")
+		response.ReturnError(c, 400, "参数错误", "")
 		return
 	}
 

@@ -1,6 +1,7 @@
-package handler
+package response
 
 import (
+	"justn0w-bot/pkg/rescode"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -28,4 +29,8 @@ func ReturnError(c *gin.Context, code int, msg interface{}, data interface{}) {
 		Data: data,
 	}
 	c.JSON(http.StatusOK, json)
+}
+
+func ReturnFailedWithErrorCode(c *gin.Context, code rescode.ErrorCode) {
+	ReturnError(c, code.Code, code.Message, nil)
 }

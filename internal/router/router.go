@@ -2,6 +2,7 @@ package router
 
 import (
 	"justn0w-bot/internal/handler"
+	"justn0w-bot/internal/middleware"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -19,21 +20,22 @@ func Router() *gin.Engine {
 		AllowCredentials: true,
 	}))
 
+	chatGroup := r.Group("/chat")
 	{
-		chatGroup := r.Group("/chat")
+		chatGroup.Use(middleware.JwtAuthMiddleWare())
 		chatGroup.POST("/generate", handler.ChatHandler{}.Generate)
 		chatGroup.POST("/generate/stream", handler.ChatHandler{}.GenerateStream)
 	}
 
+	ragGroup := r.Group("/rag")
 	{
-		chatGroup := r.Group("/rag")
-		chatGroup.POST("/file/upload", handler.RagHandler{}.UploadFile)
+		ragGroup.POST("/file/upload", handler.RagHandler{}.UploadFile)
 	}
 
+	userGroup := r.Group("/user")
 	{
-		chatGroup := r.Group("/user")
-		chatGroup.POST("/register", handler.UserHandler{}.Register)
-		chatGroup.POST("/login", handler.UserHandler{}.Login)
+		userGroup.POST("/register", handler.UserHandler{}.Register)
+		userGroup.POST("/login", handler.UserHandler{}.Login)
 	}
 	return r
 }
